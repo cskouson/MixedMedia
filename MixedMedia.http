@@ -1,0 +1,6 @@
+@MixedMedia_HostAddress = http://localhost:5230
+
+GET {{MixedMedia_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
