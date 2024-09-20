@@ -22,7 +22,7 @@ namespace MixedMedia.Domain.Services
 
         public async Task<ServiceResponse<List<ImageDto>>> GetAllImagesAsync()
         {
-            ServiceResponse<List<ImageDto>> response = new();
+            ServiceResponse<List<ImageDto>> Response = new();
 
             try
             {
@@ -34,47 +34,47 @@ namespace MixedMedia.Domain.Services
                     ImageDtoList.Add(_mapper.Map<ImageDto>(item));
                 }
 
-                response.Data = ImageDtoList;
-                response.Success = true;
-                response.Message = "Ok";
+                Response.Data = ImageDtoList;
+                Response.Success = true;
+                Response.Message = "Ok";
             } 
             catch (Exception ex)
             {
-                response.Data = null;
-                response.Success = false;
-                response.Message = "Error";
-                response.ErrorMessages = new List<string> { Convert.ToString(ex.Message) };       
+                Response.Data = null;
+                Response.Success = false;
+                Response.Message = "Error";
+                Response.ErrorMessages = new List<string> { Convert.ToString(ex.Message) };       
             }
 
-            return response;
+            return Response;
         }
 
         public async Task<ServiceResponse<ImageDto>> GetImageByIdAsync(Guid id)
         {
-            ServiceResponse<ImageDto> response = new();
+            ServiceResponse<ImageDto> Response = new();
 
             try
             {
                 var Image = await _imageRepository.GetImageByIdAsync(id);
                 var ImageDto = _mapper.Map<ImageDto>(Image);
 
-                response.Data = ImageDto;
-                response.Success = true;
-                response.Message = "Ok";
+                Response.Data = ImageDto;
+                Response.Success = true;
+                Response.Message = "Ok";
             }
             catch (Exception ex)
             {
-                response.Data = null;
-                response.Success = false;
-                response.Message = "Error";
-                response.ErrorMessages = new List<string> { Convert.ToString(ex.Message) };
+                Response.Data = null;
+                Response.Success = false;
+                Response.Message = "Error";
+                Response.ErrorMessages = new List<string> { Convert.ToString(ex.Message) };
             }
-            return response;
+            return Response;
         }
 
         public async Task<ServiceResponse<ImageDto>> AddImagesAsync(ImageDto imageDto)
         {
-            ServiceResponse<ImageDto> response = new();
+            ServiceResponse<ImageDto> Response = new();
 
             try
             {
@@ -83,57 +83,59 @@ namespace MixedMedia.Domain.Services
                 {
                     if (await _imageRepository.CheckIfImageExistsAsync(img.FileName))
                     {
-                        response.Data = null;
-                        response.Success = false;
-                        response.Error = "DuplicateImage";
-                        return response;
+                        Response.Data = null;
+                        Response.Success = false;
+                        Response.Error = "DuplicateImage";
+                        return Response;
                     }
                 }
 
-                var currentDate = DateTime.UtcNow;
+                //TODO: hook up business rule validations
+
+                var CurrentDate = DateTime.UtcNow;
                 foreach(IFormFile img in imageDto.ImageDataList)
                 {
-                    ImageEntity imageEntity = new ImageEntity()
+                    ImageEntity Image = new ImageEntity()
                     {
                         Id = Guid.NewGuid(),
                         Description = imageDto.Description,
-                        Date = currentDate,
+                        Date = CurrentDate,
                         Name = img.FileName,
                         Path = imageDto.Path
                     };
 
-                    //TODO: add correct Data field for response msg
+                    //TODO: add better Data field for response msg
 
-                    if (!await _imageRepository.AddImageAsync(imageEntity))
+                    if (!await _imageRepository.AddImageAsync(Image))
                     {
-                        response.Data = null;
-                        response.Success = false;
-                        response.Error = "RepoError";
-                        return response;
+                        Response.Data = null;
+                        Response.Success = false;
+                        Response.Error = "RepoError";
+                        return Response;
                     }
                 }
                 
                 //add image file to local storage
                 if (imageDto.ImageDataList == null || !await LocalFileOperations.SaveImageFiles(imageDto.ImageDataList, imageDto.Path, _configuration))
                 {
-                    response.Data = null;
-                    response.Success = false;
-                    response.Error = "ImageStorageError";
-                    return response;
+                    Response.Data = null;
+                    Response.Success = false;
+                    Response.Error = "ImageStorageError";
+                    return Response;
                 }
 
-                response.Data = _mapper.Map<ImageDto>(imageDto);
-                response.Success = true;
-                response.Message = "Image Created";
+                Response.Data = _mapper.Map<ImageDto>(imageDto);
+                Response.Success = true;
+                Response.Message = "Image Created";
             }
             catch (Exception ex) 
             {
-                response.Data = null;
-                response.Success = false;
-                response.Message = "Error";
-                response.ErrorMessages = new List<string> { Convert.ToString(ex.Message) };
+                Response.Data = null;
+                Response.Success = false;
+                Response.Message = "Error";
+                Response.ErrorMessages = new List<string> { Convert.ToString(ex.Message) };
             }
-            return response;
+            return Response;
         }
     }
 }

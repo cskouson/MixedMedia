@@ -26,23 +26,26 @@
             return true;
         }
 
-        public async static Task<bool> SaveVideoFile(IFormFile video, string path, IConfiguration config)
+        public async static Task<bool> SaveVideoFile(List<IFormFile> videoList, string path, IConfiguration config)
         {
             string _baseVideoPath = config["Configurations:BaseFilesPath"] + "mixed-media-videos\\";
 
             Directory.CreateDirectory(Path.Combine(_baseVideoPath, path));
 
-            if (video.FileName == null || video.Length == 0) 
-            { 
-                return false; 
-            }
-
-            var fullPath = Path.Combine(_baseVideoPath, path, video.FileName);
-
-            using (FileStream stream = new FileStream(fullPath, FileMode.Create))
+            foreach (var video in videoList)
             {
-                await video.CopyToAsync(stream);
-                stream.Close();
+                if (video.FileName == null || video.Length == 0)
+                {
+                    return false;
+                }
+
+                var fullPath = Path.Combine(_baseVideoPath, path, video.FileName);
+
+                using (FileStream stream = new FileStream(fullPath, FileMode.Create))
+                {
+                    await video.CopyToAsync(stream);
+                    stream.Close();
+                }
             }
             return true;
         }
