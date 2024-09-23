@@ -12,7 +12,7 @@ namespace MixedMedia.Common.Mapping
             CreateMap<ImageControllerPostDto, ImageDto>().ReverseMap();
 
             CreateMap<VideoEntity, VideoDto>().ReverseMap();
-            //CreateMap<VideoControllerPostDto, VideoDto>().ReverseMap();
+            CreateMap<VideoControllerPostDto, VideoDto>().ReverseMap();
         }
          
     }

@@ -14,8 +14,8 @@ namespace MixedMedia.Api.Controllers
 
         public ImageController(IImageService imageService, IMapper mapper) 
         {
-            this._imageService = imageService;
-            this._mapper = mapper;
+            _imageService = imageService;
+            _mapper = mapper;
         }
 
         [Route("GetAllImages")]
