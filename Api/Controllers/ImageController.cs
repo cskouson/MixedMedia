@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using MixedMedia.Common.Dtos;
 using MixedMedia.Domain.Services.Interfaces;
 
@@ -34,6 +35,16 @@ namespace MixedMedia.Api.Controllers
         {
             var Image = await _imageService.GetImageByIdAsync(id);
             return Ok(Image);
+        }
+
+        [Route("GetImageFile")]
+        [HttpGet]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetImageFile(int token, string path, string fileName )
+        {
+            Stream image = await _imageService.GetImageFile(token, path, fileName);
+
+            return File(image, "application/octet", fileName);
         }
 
         [Route("UploadImages")]

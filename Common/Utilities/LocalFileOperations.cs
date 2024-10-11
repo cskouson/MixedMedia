@@ -26,6 +26,17 @@
             return true;
         }
 
+        public async static Task<Stream> LoadImageFiles(string path, string fileName, IConfiguration config)
+        {
+            string _baseImagePath = config["Configurations:BaseFilesPath"] + "mixed-media-images\\";
+
+            var fullPath = Path.Combine(_baseImagePath, path, fileName);
+
+            Stream stream = new MemoryStream(
+                await File.ReadAllBytesAsync(fullPath));
+            return stream;
+        }
+
         public async static Task<bool> SaveVideoFile(List<IFormFile> videoList, string path, IConfiguration config)
         {
             string _baseVideoPath = config["Configurations:BaseFilesPath"] + "mixed-media-videos\\";

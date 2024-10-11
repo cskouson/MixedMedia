@@ -3,6 +3,7 @@ using MixedMedia.Common.Dtos;
 using MixedMedia.Common.Utilities;
 using MixedMedia.Data.Entities;
 using MixedMedia.Data.Repositories.Interfaces;
+using MixedMedia.Domain.BusinessRules.ImageRules;
 using MixedMedia.Domain.Services.Interfaces;
 
 namespace MixedMedia.Domain.Services
@@ -29,7 +30,7 @@ namespace MixedMedia.Domain.Services
                 var ImageList = await _imageRepository.GetAllImagesAsync();
                 var ImageDtoList = new List<ImageDto>();
 
-                foreach(var item in ImageList)
+                foreach (var item in ImageList)
                 {
                     ImageDtoList.Add(_mapper.Map<ImageDto>(item));
                 }
@@ -72,6 +73,20 @@ namespace MixedMedia.Domain.Services
             return Response;
         }
 
+        public async Task<Stream> GetImageFile(int token, string path, string fileName)
+        {
+            //TODO: add token check and flag once database has the table for them.
+            try
+            {
+                return await LocalFileOperations.LoadImageFiles(path, fileName, _configuration);
+            }
+            catch (Exception ex)
+            {
+                return new MemoryStream();
+            }
+            
+        }
+
         public async Task<ServiceResponse<ImageDto>> AddImagesAsync(ImageDto imageDto)
         {
             ServiceResponse<ImageDto> Response = new();
@@ -79,7 +94,7 @@ namespace MixedMedia.Domain.Services
             try
             {
                 //check to see if image already exists
-                foreach(IFormFile img in imageDto.ImageDataList)
+                foreach (IFormFile img in imageDto.ImageDataList)
                 {
                     if (await _imageRepository.CheckIfImageExistsAsync(img.FileName))
                     {
@@ -90,10 +105,16 @@ namespace MixedMedia.Domain.Services
                     }
                 }
 
-                //TODO: hook up business rule validations
+                if(!ImageRulesBase.RunAllValidations(imageDto.ImageDataList))
+                {
+                    Response.Data = null;
+                    Response.Success = false;
+                    Response.Error = "Invalid Image Files";
+                    return Response;
+                }
 
                 var CurrentDate = DateTime.UtcNow;
-                foreach(IFormFile img in imageDto.ImageDataList)
+                foreach (IFormFile img in imageDto.ImageDataList)
                 {
                     ImageEntity Image = new ImageEntity()
                     {
